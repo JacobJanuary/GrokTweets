@@ -1,0 +1,17 @@
+[Unit]
+Description=Grok Categories Service
+After=network.target mysql.service
+
+[Service]
+User=your_username
+WorkingDirectory=/path/to/your/script/directory
+ExecStart=/usr/bin/python3 /path/to/your/script/directory/grok_categories.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+# Optional: Set resource limits if needed
+# LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
