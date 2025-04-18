@@ -1,0 +1,59 @@
+/* Стили для подвала твита с кнопками голосования */
+
+.tweet-footer {
+    padding: 10px 15px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.tweet-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.tweet-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tweet-link {
+    color: var(--link-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tweet-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .tweet-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .voting-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .tweet-link {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 0;
+        background-color: var(--light-color);
+        border-radius: 20px;
+        margin-top: 5px;
+    }
+}

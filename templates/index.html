@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Фильтры в одну линию -->
+<form method="get" action="{{ url_for('index') }}" class="filters-form">
+    <div class="filters-row">
+        <div class="filter-group">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i> Категории:
+            </div>
+            <div class="categories-filter">
+                {% for category in all_categories %}
+                <label class="category-checkbox {% if category.category_id|string in selected_categories %}active{% endif %}">
+                    <input type="checkbox" name="category" value="{{ category.category_id }}"
+                           {% if category.category_id|string in selected_categories %}checked{% endif %}
+                           onchange="this.parentElement.classList.toggle('active')">
+                    {{ category.category_name }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-title">
+                <i class="fas fa-user"></i> Автор:
+            </div>
+            <select name="author" class="author-select">
+                <option value="">Все авторы</option>
+                {% for author in all_authors %}
+                <option value="{{ author.username }}" {% if author.username == author_filter %}selected{% endif %}>
+                    @{{ author.username }} ({{ author.tweet_count }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-title">
+                <i class="fas fa-calendar"></i> Дата:
+            </div>
+            <div class="date-filters">
+                <div class="filter-field">
+                    <label>От:</label>
+                    <input type="date" name="date_from" value="{{ date_from }}" class="date-input">
+                </div>
+                <div class="filter-field">
+                    <label>До:</label>
+                    <input type="date" name="date_to" value="{{ date_to }}" class="date-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-title">
+                <i class="fas fa-chart-bar"></i> Метрики:
+            </div>
+            <div class="metrics-filters">
+                <div class="metrics-row">
+                    <div class="filter-field">
+                        <label>Лайки:</label>
+                        <div class="range-inputs">
+                            <input type="number" name="likes_from" placeholder="от" value="{{ likes_from }}" class="number-input">
+                            <input type="number" name="likes_to" placeholder="до" value="{{ likes_to }}" class="number-input">
+                        </div>
+                    </div>
+                    <div class="filter-field">
+                        <label>Ретвиты:</label>
+                        <div class="range-inputs">
+                            <input type="number" name="retweets_from" placeholder="от" value="{{ retweets_from }}" class="number-input">
+                            <input type="number" name="retweets_to" placeholder="до" value="{{ retweets_to }}" class="number-input">
+                        </div>
+                    </div>
+                    <div class="filter-field">
+                        <label>Ответы:</label>
+                        <div class="range-inputs">
+                            <input type="number" name="replies_from" placeholder="от" value="{{ replies_from }}" class="number-input">
+                            <input type="number" name="replies_to" placeholder="до" value="{{ replies_to }}" class="number-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-buttons">
+            <button type="submit" class="filter-button apply-filters"><i class="fas fa-check"></i> Применить</button>
+            <a href="{{ url_for('index') }}" class="filter-button reset-filters"><i class="fas fa-times"></i> Сбросить</a>
+        </div>
+    </div>
+</form>
+
+<!-- Результаты фильтрации -->
+<div class="filter-results">
+    <div class="results-count">
+        Найдено твитов: <span class="count-badge">{{ total_tweets }}</span>
+    </div>
+</div>
+
+<div class="tweets-container">
+    {% for tweet in tweets %}
+    <div class="tweet-card">
+        <div class="tweet-header">
+            <div class="user-info">
+                {% if tweet.username %}
+                <span class="username">@{{ tweet.username }}</span>
+                {% else %}
+                <span class="username">@{{ tweet.user_id }}</span>
+                {% endif %}
+                {% if tweet.user_name %}
+                <span class="name">{{ tweet.user_name }}</span>
+                {% endif %}
+            </div>
+            <div class="tweet-meta">
+                <span class="date">{{ tweet.created_at.strftime('%d.%m.%Y %H:%M') if tweet.created_at else 'Дата не указана' }}</span>
+                {% if tweet.category_name %}
+                <span class="category">{{ tweet.category_name }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tweet-content">
+            {% if tweet.is_retweet %}
+            <div class="retweet-info">
+                <i class="fas fa-retweet"></i> Retweet от <span class="original-author">{{ tweet.original_author }}</span>
+            </div>
+            {% endif %}
+
+            <div class="tweet-text">
+                {{ tweet.grok_text }}
+            </div>
+
+            <div class="original-tweet-text">
+                <strong>Оригинальный текст:</strong>
+                <p>{{ tweet.tweet_text }}</p>
+            </div>
+
+            {% if tweet.images and tweet.images|length > 0 %}
+            <div class="tweet-images {% if tweet.images|length == 1 %}single-image{% elif tweet.images|length == 2 %}two-images{% else %}multiple-images{% endif %}">
+                {% for image in tweet.images %}
+                <div class="image-container {% if image.isChart %}chart{% endif %}">
+                    {% if image.file_path %}
+                    <img src="/twitter_images/{{ image.file_path }}" alt="Tweet image"
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x300?text=Image+Not+Available';this.parentElement.classList.add('image-error');console.error('Ошибка загрузки изображения:', this.src);"
+                         onload="this.style.opacity='1';this.parentElement.classList.add('loaded');console.log('Изображение загружено:', this.src);">
+                    {% else %}
+                    <img src="https://via.placeholder.com/400x300?text=No+Image" alt="No image available"
+                         onload="this.style.opacity='1';this.parentElement.classList.add('loaded');">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="tweet-footer">
+            <div class="tweet-stats">
+                <span class="likes"><i class="far fa-heart"></i> {{ tweet.likes or 0 }}</span>
+                <span class="retweets"><i class="fas fa-retweet"></i> {{ tweet.retweets or 0 }}</span>
+                <span class="replies"><i class="far fa-comment"></i> {{ tweet.replies or 0 }}</span>
+            </div>
+
+            <div class="voting-buttons">
+                <button class="vote-button good-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="good">
+                    <i class="far fa-thumbs-up"></i> Good
+                </button>
+                <button class="vote-button bad-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="bad">
+                    <i class="far fa-thumbs-down"></i> Bad
+                </button>
+            </div>
+
+            {% if tweet.tweet_url %}
+            <a href="{{ tweet.tweet_url }}" target="_blank" class="tweet-link">
+                <i class="fas fa-external-link-alt"></i> Открыть в Twitter
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-tweets">
+        <p>Твиты не найдены.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if current_page > 1 %}
+    <a href="{{ url_for('index', page=current_page-1, **{'category': selected_categories, 'author': author_filter, 'date_from': date_from, 'date_to': date_to, 'likes_from': likes_from, 'likes_to': likes_to, 'retweets_from': retweets_from, 'retweets_to': retweets_to, 'replies_from': replies_from, 'replies_to': replies_to}) }}" class="pagination-item">
+        <i class="fas fa-chevron-left"></i> Предыдущая
+    </a>
+    {% endif %}
+
+    <div class="pagination-pages">
+        {% set start = [current_page - 2, 1] | max %}
+        {% set end = [start + 4, total_pages + 1] | min %}
+        {% set start = [end - 5, 1] | max %}
+
+        {% if start > 1 %}
+        <a href="{{ url_for('index', page=1, **{'category': selected_categories, 'author': author_filter, 'date_from': date_from, 'date_to': date_to, 'likes_from': likes_from, 'likes_to': likes_to, 'retweets_from': retweets_from, 'retweets_to': retweets_to, 'replies_from': replies_from, 'replies_to': replies_to}) }}" class="pagination-item">1</a>
+        {% if start > 2 %}
+        <span class="pagination-dots">...</span>
+        {% endif %}
+        {% endif %}
+
+        {% for p in range(start, end) %}
+        <a href="{{ url_for('index', page=p, **{'category': selected_categories, 'author': author_filter, 'date_from': date_from, 'date_to': date_to, 'likes_from': likes_from, 'likes_to': likes_to, 'retweets_from': retweets_from, 'retweets_to': retweets_to, 'replies_from': replies_from, 'replies_to': replies_to}) }}" class="pagination-item {% if p == current_page %}active{% endif %}">
+            {{ p }}
+        </a>
+        {% endfor %}
+
+        {% if end <= total_pages %}
+        {% if end < total_pages %}
+        <span class="pagination-dots">...</span>
+        {% endif %}
+        <a href="{{ url_for('index', page=total_pages, **{'category': selected_categories, 'author': author_filter, 'date_from': date_from, 'date_to': date_to, 'likes_from': likes_from, 'likes_to': likes_to, 'retweets_from': retweets_from, 'retweets_to': retweets_to, 'replies_from': replies_from, 'replies_to': replies_to}) }}" class="pagination-item">{{ total_pages }}</a>
+        {% endif %}
+    </div>
+
+    {% if current_page < total_pages %}
+    <a href="{{ url_for('index', page=current_page+1, **{'category': selected_categories, 'author': author_filter, 'date_from': date_from, 'date_to': date_to, 'likes_from': likes_from, 'likes_to': likes_to, 'retweets_from': retweets_from, 'retweets_to': retweets_to, 'replies_from': replies_from, 'replies_to': replies_to}) }}" class="pagination-item">
+        Следующая <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
