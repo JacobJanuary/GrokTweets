@@ -29,7 +29,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 mysql = MySQL(app)
 
 # Настройка путей для медиафайлов
-app.config['TWITTER_IMAGES_PATH'] = '/Users/evgeniyyanvarskiy/PycharmProjects/twitter/'
+app.config['TWITTER_IMAGES_PATH'] = '/Users/evgeniyyanvarskiy/Downloads/'
 app.logger.info(f"Базовый путь для изображений: {app.config['TWITTER_IMAGES_PATH']}")
 
 

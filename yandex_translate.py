@@ -48,10 +48,8 @@ def get_untranslated_tweets(conn, batch_size=100, offset=0):
     query = """
             SELECT * \
             FROM `tweets` \
-            WHERE `id` in (SELECT `tweet_id` \
-                           FROM `good_tweet` \
-                           WHERE DATE (`created_at`) = CURDATE()
-                ) LIMIT %s \
+            WHERE  `created_at` >= NOW() - INTERVAL 24 HOUR \
+                 LIMIT %s \
             OFFSET %s; \
             """
 
@@ -69,10 +67,7 @@ def count_untranslated_tweets(conn):
     query = """
             SELECT COUNT(*) \
             FROM `tweets` \
-            WHERE `id` in (SELECT `tweet_id` \
-                           FROM `good_tweet` \
-                           WHERE DATE (`created_at`) = CURDATE()
-                ); \
+            WHERE  `created_at` >= NOW() - INTERVAL 24 HOUR \
             """
 
     cursor.execute(query)

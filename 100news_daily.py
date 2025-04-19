@@ -7,7 +7,7 @@ import datetime
 
 
 # Функция для построения промта
-def build_prompt(tweets_text):
+def build_prompt(tweets_text, previous_summaries):
     prompt = (
         "Carefully analyze the following list of tweets from the top 100 influencers. Each tweet may contain:\n"
         "- Important news\n"
@@ -30,6 +30,9 @@ def build_prompt(tweets_text):
         "— (1–2 sentence explanation in Russian, if needed)\n"
         "— Link(s) to the best tweet(s) on this topic\n\n"
         "Always write the whole summary strictly in clear, succinct, business-like Russian (do not use English in the output). Focus on content important and useful for market participants and investors; avoid redundancy, repetition, or wording that does not add value.\n\n"
+        "Before starting, carefully review the list of previous news summaries (archive):\n"
+        f"{previous_summaries}\n\n"
+        "If any news, event, or analysis from the new tweets is already present in substance or content in one of these previous summaries, do NOT include it in the new summary. Only include genuinely new or unreported news and insights that were not covered in previous summaries, even if phrasing differs. Avoid any duplication or overlap in meaning with both recent and older summaries.\n\n"
         f"Here is the list of tweets:\n\n{tweets_text}\n"
     )
     return prompt
@@ -55,6 +58,16 @@ DB_CONFIG = {
 conn = MySQLdb.connect(**DB_CONFIG)
 cursor = conn.cursor()
 
+# Получение предыдущих сводок новостей за последние 24 часа
+one_day_ago = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+cursor.execute("SELECT `text_news` FROM `grok_news` WHERE `news_time` >= %s ORDER BY `news_time` DESC", (one_day_ago,))
+previous_news = cursor.fetchall()
+
+# Формирование строки с предыдущими сводками
+previous_summaries = ""
+for i, news in enumerate(previous_news, 1):
+    previous_summaries += f"=== Previous Summary {i} ===\n{news['text_news']}\n\n"
+
 # Извлечение 20 самых ранних твитов из базы данных, где checked не равно true (ASC сортировка по id)
 cursor.execute(
     "SELECT `id`, `grok_text`, `url` FROM `good_tweet` WHERE `checked` IS NOT TRUE ORDER BY `id` ASC LIMIT 20")
@@ -78,7 +91,7 @@ client = OpenAI(
 messages = [
     {"role": "system",
      "content": "You are Grok, a chatbot created by xAI. Your task is to analyze tweets from top influencers and extract only high-impact information with maximum precision and clarity."},
-    {"role": "user", "content": build_prompt(tweets_text)},
+    {"role": "user", "content": build_prompt(tweets_text, previous_summaries)},
 ]
 
 # Отправка запроса к API Grok с температурой 0
