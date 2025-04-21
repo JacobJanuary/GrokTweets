@@ -94,44 +94,98 @@ def index(page=1):
     cur.execute("SELECT category_id, category_name FROM categories ORDER BY category_name")
     all_categories = cur.fetchall()
 
-    # Получаем всех авторов для выпадающего списка
+    # Получаем всех авторов для выпадающего списка с данными из tweets вместо good_tweet
     cur.execute("""
-    SELECT 
-        u.username, COUNT(gt.id) as tweet_count 
-    FROM 
-        users u 
-    JOIN 
-        good_tweet gt ON u.id = gt.user_id 
-    GROUP BY 
-        u.username 
-    ORDER BY 
-        u.username ASC
-    """)
+                SELECT u.username,
+                       COUNT(t.id) as tweet_count
+                FROM users u
+                         JOIN
+                     tweets t ON u.id = t.user_id
+                GROUP BY u.username
+                ORDER BY u.username ASC
+                """)
     all_authors = cur.fetchall()
 
     # Количество твитов на странице
     per_page = 50
     offset = (page - 1) * per_page
 
-    # Формируем базовый запрос с возможностью фильтрации
-    query_base = """
-    FROM 
-        good_tweet gt
-    LEFT JOIN 
-        categories c ON gt.category_id = c.category_id
-    LEFT JOIN 
-        users u ON gt.user_id = u.id
-    LEFT JOIN 
-        tweets t ON gt.tweet_id = t.id
-    """
+    # Формируем базовый запрос с возможностью фильтрации, используя только таблицу tweets
+    # Проверяем структуру таблицы tweets, чтобы узнать, есть ли определенные столбцы
+    # Проверка столбца category_id
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME = 'category_id'
+                """)
+    has_category_id = cur.fetchone() is not None
+
+    # Проверка столбца tweet_text
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME = 'tweet_text'
+                """)
+    has_tweet_text = cur.fetchone() is not None
+
+    # Проверка столбца original_tweet_text
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME = 'original_tweet_text'
+                """)
+    has_original_tweet_text = cur.fetchone() is not None
+
+    # Проверка столбцов good и bad
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME IN ('good', 'bad')
+                """)
+    voting_columns = cur.fetchall()
+    has_voting = len(voting_columns) > 0
+
+    # Создаем запрос в зависимости от наличия столбца category_id
+    if has_category_id:
+        query_base = """
+        FROM 
+            tweets t
+        LEFT JOIN 
+            categories c ON t.category_id = c.category_id
+        LEFT JOIN 
+            users u ON t.user_id = u.id
+        """
+    else:
+        # Если столбца category_id нет, то не делаем JOIN с таблицей categories
+        query_base = """
+        FROM 
+            tweets t
+        LEFT JOIN 
+            users u ON t.user_id = u.id
+        """
 
     # Создаем список для условий WHERE и параметров
     where_conditions = []
     query_params = []
 
+    # ===== НАЧАЛО ФИЛЬТРАЦИИ ПО ORIGINAL_TWEET_TEXT =====
+    # Добавляем условие для фильтрации твитов, где original_tweet_text равен NULL
+    # Чтобы вернуть все твиты, просто удалите или закомментируйте эту строку
+    if has_original_tweet_text:
+        where_conditions.append("t.original_tweet_text IS NOT NULL")
+    # ===== КОНЕЦ ФИЛЬТРАЦИИ ПО ORIGINAL_TWEET_TEXT =====
+
     # Добавляем условие фильтрации по категориям, если они выбраны
     if selected_categories:
-        where_conditions.append("gt.category_id IN ({})".format(
+        where_conditions.append("t.category_id IN ({})".format(
             ','.join(['%s'] * len(selected_categories))
         ))
         query_params.extend(selected_categories)
@@ -193,16 +247,8 @@ def index(page=1):
     page = min(page, total_pages)
 
     # Получаем твиты для текущей страницы
-    query = """
-    SELECT 
-        gt.id, 
-        gt.grok_text, 
-        gt.url as tweet_url, 
-        gt.category_id,
-        c.category_name,
-        gt.user_id, 
-        u.username, 
-        u.name as user_name,
+    # Составляем базовую часть SELECT запроса
+    select_base = """
         t.id as tweet_id_num, 
         t.tweet_id, 
         t.created_at, 
@@ -211,8 +257,30 @@ def index(page=1):
         t.replies, 
         t.is_retweet, 
         t.original_author,
-        t.tweet_text
-    """ + query_base + " " + query_where + """
+        t.url as tweet_url,
+        t.user_id, 
+        u.username, 
+        u.name as user_name
+    """
+
+    # Добавляем tweet_text, если он есть
+    if has_tweet_text:
+        select_base += ", t.tweet_text"
+
+    # Добавляем original_tweet_text, если он есть
+    if has_original_tweet_text:
+        select_base += ", t.original_tweet_text"
+
+    # Добавляем category_id и category_name, если есть category_id
+    if has_category_id:
+        select_base += ", t.category_id, c.category_name"
+
+    # Добавляем поля good и bad для голосования, если они есть
+    if has_voting:
+        select_base += ", t.good, t.bad"
+
+    # Формируем итоговый запрос
+    query = "SELECT " + select_base + " " + query_base + " " + query_where + """
     ORDER BY 
         t.created_at DESC
     LIMIT %s OFFSET %s
@@ -227,38 +295,24 @@ def index(page=1):
 
     # Для каждого твита получаем связанные изображения
     for tweet in tweets:
-        # Проверяем все возможные идентификаторы
-        tweet_identifiers = []
+        # Проверяем идентификатор твита
+        tweet_id = tweet.get('tweet_id_num')
 
-        # Добавляем доступные идентификаторы для поиска
-        if tweet.get('tweet_id_num'):
-            tweet_identifiers.append(tweet['tweet_id_num'])
-        if tweet.get('tweet_id'):
-            tweet_identifiers.append(tweet['tweet_id'])
-        if tweet.get('id'):
-            tweet_identifiers.append(tweet['id'])
-
-        # Если нет идентификаторов, пропускаем
-        if not tweet_identifiers:
+        # Если нет идентификатора, пропускаем
+        if not tweet_id:
             tweet['images'] = []
             continue
 
-        # Формируем условие IN для поиска по всем идентификаторам
-        placeholders = ','.join(['%s'] * len(tweet_identifiers))
+        # Запрос для получения изображений
+        image_query = """
+                      SELECT local_path, \
+                             image_url, \
+                             isChart
+                      FROM images
+                      WHERE tweet_id = %s LIMIT 5 \
+                      """
 
-        image_query = f"""
-        SELECT 
-            local_path, 
-            image_url, 
-            isChart
-        FROM 
-            images
-        WHERE 
-            tweet_id IN ({placeholders})
-        LIMIT 5
-        """
-
-        cur.execute(image_query, tweet_identifiers)
+        cur.execute(image_query, (tweet_id,))
         images = cur.fetchall()
 
         # Обрабатываем пути к изображениям
@@ -289,7 +343,11 @@ def index(page=1):
                            retweets_from=retweets_from,
                            retweets_to=retweets_to,
                            replies_from=replies_from,
-                           replies_to=replies_to)
+                           replies_to=replies_to,
+                           has_category_id=has_category_id,
+                           has_tweet_text=has_tweet_text,
+                           has_voting=has_voting,
+                           has_original_tweet_text=has_original_tweet_text)
 
 
 @app.route('/api/vote', methods=['POST'])
@@ -345,6 +403,183 @@ def vote():
         app.logger.error(f"Ошибка при голосовании: {str(e)}")
         return jsonify({"success": False, "message": "Произошла ошибка при голосовании"}), 500
 
+@app.route('/translated')
+@app.route('/translated/page/<int:page>')
+def translated_tweets(page=1):
+    # Количество твитов на странице
+    per_page = 50
+    offset = (page - 1) * per_page
+
+    # Создаем подключение к базе данных
+    cur = mysql.connection.cursor()
+
+    # Проверка наличия столбца original_tweet_text
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME = 'original_tweet_text'
+                """)
+    has_original_tweet_text = cur.fetchone() is not None
+
+    # Если столбца original_tweet_text нет, вернем сообщение об ошибке
+    if not has_original_tweet_text:
+        return render_template('error.html', message="Столбец original_tweet_text не найден в таблице tweets"), 404
+
+    # Проверка столбца category_id
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME = 'category_id'
+                """)
+    has_category_id = cur.fetchone() is not None
+
+    # Проверка столбцов good и bad
+    cur.execute("""
+                SELECT COLUMN_NAME
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'tweets'
+                  AND COLUMN_NAME IN ('good', 'bad')
+                """)
+    voting_columns = cur.fetchall()
+    has_voting = len(voting_columns) > 0
+
+    # Базовый запрос с обязательным условием для original_tweet_text
+    # Изменено условие: теперь мы проверяем, что original_tweet_text не NULL 
+    # и не пустая строка, но также разрешаем показать дополнительно пустые строки
+    if has_category_id:
+        query_base = """
+        FROM 
+            tweets t
+        LEFT JOIN 
+            categories c ON t.category_id = c.category_id
+        LEFT JOIN 
+            users u ON t.user_id = u.id
+        WHERE 
+            t.original_tweet_text IS NOT NULL
+        """
+    else:
+        query_base = """
+        FROM 
+            tweets t
+        LEFT JOIN 
+            users u ON t.user_id = u.id
+        WHERE 
+            t.original_tweet_text IS NOT NULL
+        """
+
+    # Получаем общее количество твитов с переводом
+    count_query = "SELECT COUNT(*) as total " + query_base
+    cur.execute(count_query)
+    total_tweets = cur.fetchone()['total']
+
+    # Если твитов нет, показываем сообщение о пустом результате
+    if total_tweets == 0:
+        cur.close()
+        return render_template('index.html', 
+                              tweets=[],
+                              current_page=1,
+                              total_pages=1,
+                              total_tweets=0,
+                              has_category_id=has_category_id,
+                              has_tweet_text=True,
+                              has_voting=has_voting,
+                              has_original_tweet_text=has_original_tweet_text,
+                              page_title="Переведенные твиты",
+                              message="Нет переведенных твитов. Поле original_tweet_text пусто для всех записей.")
+
+    # Вычисляем общее количество страниц
+    total_pages = max(1, (total_tweets + per_page - 1) // per_page)
+
+    # Корректируем текущую страницу, если она вышла за пределы
+    page = min(page, total_pages)
+
+    # Составляем базовую часть SELECT запроса
+    select_base = """
+        t.id as tweet_id_num, 
+        t.tweet_id, 
+        t.created_at, 
+        t.likes, 
+        t.retweets, 
+        t.replies, 
+        t.is_retweet, 
+        t.original_author,
+        t.url as tweet_url,
+        t.user_id, 
+        u.username, 
+        u.name as user_name
+    """
+
+    # Добавляем tweet_text и original_tweet_text
+    select_base += ", t.tweet_text"
+
+    # При выводе используем COALESCE чтобы показать original_tweet_text если он есть, иначе tweet_text
+    select_base += ", t.original_tweet_text"
+
+    # Добавляем category_id и category_name, если есть category_id
+    if has_category_id:
+        select_base += ", t.category_id, c.category_name"
+
+    # Добавляем поля good и bad для голосования, если они есть
+    if has_voting:
+        select_base += ", t.good, t.bad"
+
+    # Формируем итоговый запрос
+    query = "SELECT " + select_base + " " + query_base + """
+    ORDER BY 
+        t.created_at DESC
+    LIMIT %s OFFSET %s
+    """
+
+    # Выполняем запрос с параметрами для пагинации
+    cur.execute(query, (per_page, offset))
+    tweets = cur.fetchall()
+
+    # Для каждого твита получаем связанные изображения
+    for tweet in tweets:
+        tweet_id = tweet.get('tweet_id_num')
+
+        if not tweet_id:
+            tweet['images'] = []
+            continue
+
+        # Запрос для получения изображений
+        image_query = """
+                      SELECT local_path, \
+                             image_url, \
+                             isChart
+                      FROM images
+                      WHERE tweet_id = %s LIMIT 5 \
+                      """
+
+        cur.execute(image_query, (tweet_id,))
+        images = cur.fetchall()
+
+        # Обрабатываем пути к изображениям
+        for image in images:
+            if image['local_path']:
+                image['file_path'] = image['local_path']
+            else:
+                image['file_path'] = None
+
+        tweet['images'] = images
+
+    cur.close()
+
+    return render_template('index.html',
+                           tweets=tweets,
+                           current_page=page,
+                           total_pages=total_pages,
+                           total_tweets=total_tweets,
+                           has_category_id=has_category_id,
+                           has_tweet_text=True,
+                           has_voting=has_voting,
+                           has_original_tweet_text=has_original_tweet_text,
+                           page_title="Переведенные твиты")
 
 if __name__ == '__main__':
     # Создаем папки для статических файлов если их нет

@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обработка нажатий на кнопки голосования
-    const voteButtons = document.querySelectorAll('.vote-button');
+    const voteButtons = document.querySelectorAll('.vote-button:not([disabled])');
     voteButtons.forEach(button => {
         button.addEventListener('click', function() {
             const tweetId = this.dataset.tweetId;
@@ -105,12 +105,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Отмечаем кнопку как нажатую
                     this.classList.add('voted');
 
-                    // Отключаем другую кнопку в этой паре
+                    // Отключаем обе кнопки в этой паре
                     const tweetFooter = this.closest('.tweet-footer');
-                    const otherButtons = tweetFooter.querySelectorAll(`.vote-button:not([data-vote-type="${voteType}"])`);
-                    otherButtons.forEach(btn => {
+                    const allButtons = tweetFooter.querySelectorAll('.vote-button');
+                    allButtons.forEach(btn => {
                         btn.disabled = true;
-                        btn.style.opacity = '0.5';
+                        if (btn !== this) {
+                            btn.style.opacity = '0.5';
+                        }
                     });
 
                     // Показываем уведомление об успехе

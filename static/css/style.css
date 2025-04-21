@@ -1,289 +1,260 @@
-.reset-filters i {
-    margin-right: 8px;
-}/* Стили для результатов фильтрации */
-.filter-results {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.results-count {
-    font-size: 0.95rem;
-    color: #657786;
-}
-
-.count-badge {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    margin-left: 5px;
-}/* Стили для фильтров по дате и метрикам */
-.date-filters, .metrics-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filter-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.filter-field label {
-    font-size: 0.8rem;
-    color: #657786;
-    font-weight: 500;
-}
-
-.date-input {
-    padding: 6px 10px;
-    border-radius: 20px;
-    border: 1px solid #e1e8ed;
-    font-size: 0.9rem;
-    width: 140px;
-    background-color: white;
-}
-
-.date-input:focus, .number-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.1);
-}
-
-.range-inputs {
-    display: flex;
-    gap: 8px;
-}
-
-.number-input {
-    padding: 6px 10px;
-    border-radius: 20px;
-    border: 1px solid #e1e8ed;
-    font-size: 0.85rem;
-    width: 60px;
-    background-color: white;
-}
-
-.metrics-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-}@media (max-width: 600px) {
-    .pagination {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .pagination-pages {
-        order: 1;
-    }
-
-    .pagination a:first-child {
-        order: 2;
-    }
-
-    .pagination a:last-child {
-        order: 0;
-    }
-}.reset-filters:hover {
-    background-color: #f5f8fa;
-    color: #1a1a1a;
-}
-
-/* Стили для кнопок голосования */
-.voting-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.vote-button {
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: 1px solid #e1e8ed;
-    background-color: white;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.vote-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.good-button {
-    color: #17bf63;
-}
-
-.good-button:hover {
-    background-color: rgba(23, 191, 99, 0.1);
-    border-color: rgba(23, 191, 99, 0.3);
-}
-
-.good-button.voted {
-    background-color: rgba(23, 191, 99, 0.2);
-    border-color: rgba(23, 191, 99, 0.5);
-    font-weight: bold;
-}
-
-.bad-button {
-    color: #e0245e;
-}
-
-.bad-button:hover {
-    background-color: rgba(224, 36, 94, 0.1);
-    border-color: rgba(224, 36, 94, 0.3);
-}
-
-.bad-button.voted {
-    background-color: rgba(224, 36, 94, 0.2);
-    border-color: rgba(224, 36, 94, 0.5);
-    font-weight: bold;
-}
-
-/* Стили для уведомлений */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    background-color: #333;
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.3s, transform 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.notification.success {
-    background-color: #17bf63;
-}
-
-.notification.error {
-    background-color: #e0245e;
-}
-
-.notification.show {
-    opacity: 1;
-    transform: translateY(0);
-}/* Responsive adjustments */
-@media (max-width: 600px) {
-    .tweet-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .tweet-meta {
-        text-align: left;
-        margin-top: 10px;
-    }
-
-    .multiple-images {
-        grid-template-columns: 1fr;
-    }
-
-    .tweet-footer {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .tweet-link {
-        width: 100%;
-        justify-content: center;
-        padding: 8px 0;
-        background-color: var(--light-color);
-        border-radius: 20px;
-    }
-}:root {
-    --primary-color: #1da1f2;
-    --dark-color: #14171a;
-    --light-color: #f5f8fa;
-    --border-color: #e1e8ed;
-    --text-color: #657786;
-    --link-color: #1b95e0;
-    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
+/* Reset и общие стили */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    font-family: var(--font-family);
-    color: var(--dark-color);
-    background-color: var(--light-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 15px;
 }
 
 header {
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 15px 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-header h1 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    font-weight: bold;
+    background-color: #1da1f2;
+    color: white;
+    padding: 10px 0;
+    margin-bottom: 20px;
 }
 
 main {
     padding: 20px 0;
 }
 
-.tweets-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 1px solid #eee;
+    color: #6c757d;
 }
 
+/* Стили для фильтров */
+.filters-form {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.filter-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #1da1f2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.toggle-icon {
+    margin-left: auto;
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+
+.filter-group.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+/* Стили для фильтра категорий */
+.categories-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.category-checkbox {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e8f5fd;
+    border-radius: 50px;
+    padding: 5px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.category-checkbox.active {
+    background-color: #1da1f2;
+    color: white;
+}
+
+.category-checkbox input {
+    position: absolute;
+    opacity: 0;
+}
+
+/* Стили для выпадающего списка авторов */
+.author-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    background-color: #fff;
+}
+
+/* Стили для фильтров по дате и метрикам */
+.date-filters, .metrics-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metrics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-field label {
+    font-size: 0.85em;
+    color: #555;
+}
+
+.date-input, .number-input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.range-inputs {
+    display: flex;
+    gap: 5px;
+}
+
+.range-inputs input {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Кнопки фильтров */
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-self: flex-end;
+}
+
+.filter-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.apply-filters {
+    background-color: #1da1f2;
+    color: white;
+}
+
+.apply-filters:hover {
+    background-color: #0d8ecf;
+}
+
+.reset-filters {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.reset-filters:hover {
+    background-color: #e5e5e5;
+}
+
+/* Результаты фильтрации */
+.filter-results {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.results-count {
+    font-size: 16px;
+    color: #666;
+}
+
+.count-badge {
+    background-color: #1da1f2;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Контейнер для твитов */
+.tweets-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Карточка твита */
 .tweet-card {
     background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .tweet-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Заголовок твита */
 .tweet-header {
     padding: 15px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #eee;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .user-info {
@@ -292,62 +263,86 @@ main {
 }
 
 .username {
-    font-weight: bold;
-    color: var(--dark-color);
+    font-weight: 600;
+    color: #1da1f2;
 }
 
 .name {
-    color: var(--text-color);
-    font-size: 0.9rem;
+    font-size: 0.9em;
+    color: #666;
 }
 
 .tweet-meta {
-    font-size: 0.85rem;
-    color: var(--text-color);
     text-align: right;
-}
-
-.date {
-    display: block;
-    margin-bottom: 4px;
-}
-
-.category {
-    display: inline-block;
-    background-color: #e8f5fd;
-    color: var(--primary-color);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-}
-
-.tweet-content {
-    padding: 15px;
-}
-
-.retweet-info {
-    font-size: 0.9rem;
-    color: var(--text-color);
-    margin-bottom: 10px;
+    font-size: 0.85em;
+    color: #777;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 5px;
 }
 
+.date {
+    white-space: nowrap;
+}
+
+.category {
+    background-color: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.85em;
+}
+
+/* Содержимое твита */
+.tweet-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.retweet-info {
+    font-size: 0.9em;
+    color: #666;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .original-author {
-    font-weight: bold;
+    font-weight: 600;
+    color: #555;
 }
 
 .tweet-text {
-    font-size: 1rem;
-    margin-bottom: 15px;
+    font-size: 16px;
+    line-height: 1.5;
     white-space: pre-line;
+    overflow-wrap: break-word;
 }
 
+.original-tweet-text {
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    border-left: 3px solid #ddd;
+    margin-top: 10px;
+}
+
+.original-tweet-text p {
+    margin-top: 5px;
+    color: #666;
+}
+
+/* Изображения в твите */
 .tweet-images {
     display: grid;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 5px;
+    margin-top: 10px;
 }
 
 .single-image {
@@ -359,68 +354,100 @@ main {
 }
 
 .multiple-images {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
 }
 
 .image-container {
-    border-radius: 12px;
-    overflow: hidden;
     position: relative;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
-    background-color: #f8f9fa;
-    border: 1px solid #e1e8ed;
-}
-
-.image-container.chart {
-    border: 1px solid #e1e8ed;
-    background-color: #f8f9fa;
+    aspect-ratio: 16 / 9;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    opacity: 0.5; /* Начинаем с полупрозрачности */
+    transition: opacity 0.5s ease;
 }
 
 .image-container img {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: opacity 0.3s ease;
-    opacity: 0; /* Start invisible */
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
 
-.image-container.loaded img {
-    opacity: 1; /* Show when loaded */
+.image-container.loaded {
+    opacity: 1;
 }
 
 .image-container.image-error {
-    background-color: #f8f9fa;
-    border: 1px dashed #ccc;
+    background-color: #ffe0e0;
 }
 
+.image-container.chart img {
+    object-fit: contain;
+    background-color: white;
+    padding: 5px;
+}
+
+/* Футер твита */
 .tweet-footer {
-    padding: 10px 15px;
-    border-top: 1px solid var(--border-color);
+    padding: 15px;
+    border-top: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .tweet-stats {
     display: flex;
     gap: 15px;
-    font-size: 0.9rem;
-    color: var(--text-color);
+    color: #666;
+    font-size: 0.9em;
 }
 
-.tweet-stats span {
+.likes, .retweets, .replies {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
+.voting-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.vote-button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.good-button:hover, .good-button.voted {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #2196f3;
+}
+
+.bad-button:hover, .bad-button.voted {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #f44336;
+}
+
 .tweet-link {
-    color: var(--link-color);
+    color: #1da1f2;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -430,160 +457,126 @@ main {
     text-decoration: underline;
 }
 
+/* Состояние "твиты не найдены" */
 .no-tweets {
-    background-color: white;
-    border-radius: 12px;
-    padding: 30px;
+    grid-column: 1 / -1;
     text-align: center;
+    padding: 50px 0;
+    color: #666;
+    font-size: 1.2em;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для пагинации */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.pagination-pages {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    background-color: white;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.2s;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Стили пагинации */
-.pagination {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
-    padding: 15px 0;
-}
-
-.pagination-pages {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.pagination-item {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    background-color: white;
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    color: var(--text-color);
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+    gap: 5px;
 }
 
 .pagination-item:hover {
-    background-color: #f5f8fa;
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background-color: #f5f5f5;
 }
 
 .pagination-item.active {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #1da1f2;
     color: white;
 }
 
 .pagination-dots {
-    padding: 0 4px;
-    color: var(--text-color);
+    padding: 8px;
+    color: #666;
 }
 
-/* Стили пагинации */
-.pagination {
+/* Уведомления */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 30px;
-    padding: 15px 0;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.pagination-pages {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.pagination-item {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    background-color: white;
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    color: var(--text-color);
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-}
-
-.pagination-item:hover {
-    background-color: #f5f8fa;
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-.pagination-item.active {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+.notification {
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     color: white;
+    font-size: 14px;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    max-width: 300px;
 }
 
-.pagination-dots {
-    padding: 0 4px;
-    color: var(--text-color);
+.notification.show {
+    transform: translateX(0);
 }
 
-footer {
-    text-align: center;
-    padding: 20px 0;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    margin-top: 30px;
+.notification.success {
+    background-color: #4caf50;
 }
 
-/* Адаптивная пагинация */
-/* Адаптивность для мобильных устройств */
+.notification.error {
+    background-color: #f44336;
+}
+
+/* Медиа запросы для адаптивности */
 @media (max-width: 768px) {
-    .filters-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-        padding: 15px;
+    .tweets-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-form {
+        padding: 10px;
     }
 
     .filter-group {
-        width: 100%;
-        flex-direction: column;
-        align-items: flex-start;
+        min-width: 100%;
     }
 
     .filter-buttons {
         width: 100%;
-        margin-left: 0;
         justify-content: space-between;
     }
 
-    .categories-filter {
-        margin-top: 8px;
-    }
-
-    .author-select, .date-input {
-        width: 100%;
-        margin-top: 8px;
-    }
-
-    .metrics-row {
+    .tweet-header, .tweet-footer {
         flex-direction: column;
         gap: 10px;
     }
 
-    .range-inputs {
-        width: 100%;
-        justify-content: space-between;
+    .tweet-meta, .tweet-stats {
+        text-align: left;
     }
+}
 
-    .number-input {
-        width: calc(50% - 5px);
-    }
+/* Дополнительные стили для сжатия/развертывания фильтров */
+.filter-group.collapsed .categories-filter,
+.filter-group.collapsed .date-filters,
+.filter-group.collapsed .metrics-filters,
+.filter-group.collapsed .author-select {
+    display: none;
 }

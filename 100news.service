@@ -1,0 +1,18 @@
+[Unit]
+Description=100news Crypto Tweets Analyzer Service
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_GROUP
+WorkingDirectory=/path/to/script/directory
+ExecStart=/bin/bash /path/to/100news_wrapper.sh
+Restart=always
+RestartSec=60
+Environment="PATH=/usr/bin:/bin:/usr/local/bin"
+# Если используете virtualenv, добавьте строку ниже
+# Environment="VIRTUAL_ENV=/path/to/virtualenv"
+
+[Install]
+WantedBy=multi-user.target

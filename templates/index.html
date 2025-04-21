@@ -4,6 +4,7 @@
 <!-- Фильтры в одну линию -->
 <form method="get" action="{{ url_for('index') }}" class="filters-form">
     <div class="filters-row">
+        {% if has_category_id %}
         <div class="filter-group">
             <div class="filter-title">
                 <i class="fas fa-filter"></i> Категории:
@@ -19,6 +20,7 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
         <div class="filter-group">
             <div class="filter-title">
@@ -111,7 +113,7 @@
             </div>
             <div class="tweet-meta">
                 <span class="date">{{ tweet.created_at.strftime('%d.%m.%Y %H:%M') if tweet.created_at else 'Дата не указана' }}</span>
-                {% if tweet.category_name %}
+                {% if tweet.category_name is defined and tweet.category_name %}
                 <span class="category">{{ tweet.category_name }}</span>
                 {% endif %}
             </div>
@@ -125,12 +127,11 @@
             {% endif %}
 
             <div class="tweet-text">
-                {{ tweet.grok_text }}
-            </div>
-
-            <div class="original-tweet-text">
-                <strong>Оригинальный текст:</strong>
-                <p>{{ tweet.tweet_text }}</p>
+                {% if tweet.tweet_text is defined and tweet.tweet_text %}
+                    {{ tweet.tweet_text }}
+                {% else %}
+                    <p class="no-text-message">Текст твита недоступен</p>
+                {% endif %}
             </div>
 
             {% if tweet.images and tweet.images|length > 0 %}
@@ -159,12 +160,33 @@
             </div>
 
             <div class="voting-buttons">
-                <button class="vote-button good-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="good">
-                    <i class="far fa-thumbs-up"></i> Good
-                </button>
-                <button class="vote-button bad-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="bad">
-                    <i class="far fa-thumbs-down"></i> Bad
-                </button>
+                {% if has_voting %}
+                    {% if (tweet.good is defined and tweet.good) or (tweet.bad is defined and tweet.bad) %}
+                        <!-- Твит уже оценен -->
+                        <button class="vote-button good-button {% if tweet.good %}voted{% endif %}" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="good" disabled>
+                            <i class="far fa-thumbs-up"></i> Good
+                        </button>
+                        <button class="vote-button bad-button {% if tweet.bad %}voted{% endif %}" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="bad" disabled>
+                            <i class="far fa-thumbs-down"></i> Bad
+                        </button>
+                    {% else %}
+                        <!-- Твит еще не оценен -->
+                        <button class="vote-button good-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="good">
+                            <i class="far fa-thumbs-up"></i> Good
+                        </button>
+                        <button class="vote-button bad-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="bad">
+                            <i class="far fa-thumbs-down"></i> Bad
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <!-- Колонки голосования отсутствуют -->
+                    <button class="vote-button good-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="good">
+                        <i class="far fa-thumbs-up"></i> Good
+                    </button>
+                    <button class="vote-button bad-button" data-tweet-id="{{ tweet.tweet_id_num }}" data-vote-type="bad">
+                        <i class="far fa-thumbs-down"></i> Bad
+                    </button>
+                {% endif %}
             </div>
 
             {% if tweet.tweet_url %}
