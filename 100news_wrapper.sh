@@ -24,10 +24,10 @@ fi
 echo $$ > "$LOCK_FILE"
 
 # Путь к вашему скрипту Python (измените на актуальный)
-SCRIPT_PATH="/path/to/100news.py"
+SCRIPT_PATH="/opt/100news/100news.py"
 
 # Путь к интерпретатору Python в вашем окружении
-PYTHON_PATH="/usr/bin/python3"
+PYTHON_PATH="/opt/100news/venv/bin/python"
 
 # Запуск скрипта с выводом логов
 echo "$(date): Запуск скрипта 100news.py" >> "$LOG_FILE"

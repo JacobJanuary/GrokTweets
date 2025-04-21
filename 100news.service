@@ -4,13 +4,13 @@ After=network.target mysql.service
 
 [Service]
 Type=simple
-User=YOUR_USERNAME
-Group=YOUR_GROUP
-WorkingDirectory=/path/to/script/directory
-ExecStart=/bin/bash /path/to/100news_wrapper.sh
+User=elcrypto
+Group=elcrypto
+WorkingDirectory=/opt/100news
+ExecStart=/bin/bash /opt/100news/100news_wrapper.sh
 Restart=always
 RestartSec=60
-Environment="PATH=/usr/bin:/bin:/usr/local/bin"
+Environment="VIRTUAL_ENV=/opt/100news/venv"
 # Если используете virtualenv, добавьте строку ниже
 # Environment="VIRTUAL_ENV=/path/to/virtualenv"
 

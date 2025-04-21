@@ -147,69 +147,6 @@ def format_for_telegram(text):
     return formatted_text
 
 
-# Функция для перевода текста через Yandex API (аналогично из yandex_translate.py)
-def translate_with_yandex(text):
-    """Перевод текста с английского на русский через Yandex API"""
-    if not text:
-        return ""
-
-    # Загрузка API ключа и идентификатора папки Yandex из переменных окружения
-    yandex_api_key = os.getenv("YANDEX_API_KEY")
-    yandex_folder_id = os.getenv("YANDEX_FOLDER_ID")
-
-    # Проверка наличия ключей
-    if not yandex_api_key or not yandex_folder_id:
-        print("ОШИБКА: Не найдены переменные окружения YANDEX_API_KEY или YANDEX_FOLDER_ID")
-        return text
-
-    # URL для Yandex Translate API
-    translate_url = "https://translate.api.cloud.yandex.net/translate/v2/translate"
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Api-Key {yandex_api_key}"
-    }
-
-    data = {
-        "folder_id": yandex_folder_id,
-        "texts": [text],
-        "sourceLanguageCode": "en",
-        "targetLanguageCode": "ru"
-    }
-
-    try:
-        response = requests.post(translate_url, json=data, headers=headers)
-        response.raise_for_status()
-
-        result = response.json()
-        if 'translations' in result and result['translations']:
-            return result['translations'][0]['text']
-        return text
-    except requests.exceptions.RequestException as e:
-        print(f"Ошибка при обращении к API перевода Yandex: {e}")
-        return text
-
-
-# Функция для обновления твита с переводом
-def update_tweet_translation(conn, tweet_id, translated_text):
-    """Обновляет поле original_tweet_text в таблице tweets, сохраняя туда перевод"""
-    cursor = conn.cursor()
-
-    try:
-        # Обновляем запись, сохраняя перевод в поле original_tweet_text
-        query = """
-                UPDATE tweets
-                SET original_tweet_text = %s
-                WHERE id = %s \
-                """
-        cursor.execute(query, (translated_text, tweet_id))
-
-    except Exception as e:
-        print(f"Ошибка при обновлении твита с ID {tweet_id}: {str(e)}")
-    finally:
-        cursor.close()
-
-
 # Функция для построения промта
 def build_prompt(tweets_text, covered_news):
     prompt = """
@@ -443,29 +380,14 @@ tweet_ids = [tweet['id'] for tweet in tweets]
 # Форматирование твитов в строку
 tweets_text = ""
 
-print("\n=== ПЕРЕВОДЫ ТВИТОВ ДЛЯ ПРОМПТА ===\n")
+print("\n=== ТВИТЫ ДЛЯ ПРОМПТА ===\n")
 
 for i, tweet in enumerate(tweets, 1):
-    # Перевод твита через Yandex API
-    translated_text = translate_with_yandex(tweet['tweet_text'])
 
-    # Выводим в консоль только перевод
-    print(f"--- Твит {i} ---")
-    print(f"Перевод: {translated_text}")
-    print(f"URL: {tweet['url']}")
-    print("\n")
-
-    # Сохраняем перевод в базе данных
-    update_tweet_translation(conn, tweet['id'], translated_text)
-
-    # Формируем строку для промпта (используем оригинальный текст для промпта)
+    # Формируем строку для промпта
     tweets_text += f"--- Tweet {i} ---\nText: {tweet['tweet_text']}\nURL: {tweet['url']}\n\n"
 
-# Применяем изменения в базе данных
-conn.commit()
-
-print(f"Переводы {len(tweets)} твитов сохранены в поле original_tweet_text")
-print("\n=== КОНЕЦ СПИСКА ПЕРЕВЕДЕННЫХ ТВИТОВ ===\n")
+print("\n=== КОНЕЦ СПИСКА ТВИТОВ ===\n")
 
 # Настройка клиента OpenAI для API Grok
 client = OpenAI(
@@ -475,8 +397,7 @@ client = OpenAI(
 
 # Формирование запроса для Grok
 messages = [
-    {"role": "system",
-     "content": "You are Grok, a chatbot created by xAI. Your task is to analyze tweets from top influencers and extract only high-impact information with maximum precision and clarity."},
+    {"role": "system", "content": "You are an expert crypto market analyst specializing in filtering and summarizing critical news, insights, and trading signals. Your task is to carefully analyze tweets from top influencers and produce only concise, high-impact, market-relevant information with perfect clarity and accuracy, in Russian."},
     {"role": "user", "content": build_prompt(tweets_text, previous_summaries)},
 ]
 
